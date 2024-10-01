@@ -1,7 +1,15 @@
 import React from 'react';
 import RN from 'react-native';
-import twrnc, { useDeviceContext, type TailwindFn, type Style } from 'twrnc';
+import { useDeviceContext, create, type TailwindFn, type Style } from 'twrnc';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+let tailwindConfig;
+
+try {
+  tailwindConfig = require('../../tailwind.config.js');
+} catch (error) {}
+
+const twrnc = create(tailwindConfig);
 
 const allowedComponents = [
   'ActivityIndicator',
