@@ -1,0 +1,33 @@
+{
+  "name": "styledwind-native",
+  "version": "1.0.0",
+  "description": "A lightweight utility for applying dynamic Tailwind CSS styles in React Native",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "jest"
+  },
+  "keywords": [
+    "tailwind",
+    "tailwindcss",
+    "react-native",
+    "classnames",
+    "styled-components",
+    "styled-wind"
+  ],
+  "author": "Silvestre Herrera",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-native": ">=0.74.5",
+    "react-native-safe-area-context": ">=4.11.0",
+    "twrnc": ">=4.5.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.10",
+    "typescript": ">=5.6.2"
+  }
+}
