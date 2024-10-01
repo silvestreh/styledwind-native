@@ -8,7 +8,6 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "prepublishOnly": "npm run build",
-    "test": "jest",
     "release:patch": "npm version patch && git push && git push --tags",
     "release:minor": "npm version minor && git push && git push --tags",
     "release:major": "npm version major && git push && git push --tags"
@@ -19,7 +18,8 @@
     "react-native",
     "classnames",
     "styled-components",
-    "styled-wind"
+    "styledwind",
+    "styledwind-native"
   ],
   "author": "Silvestre Herrera",
   "license": "ISC",

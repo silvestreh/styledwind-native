@@ -1,4 +1,4 @@
-![styledwind-native](https://i.imgur.com/GRSYZhG.png)
+![styledwind-native](https://i.imgur.com/mBb4nvz.png)
 
 # styledwind-native
 
