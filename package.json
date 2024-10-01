@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "prepublishOnly": "npm run build",
     "test": "jest",
     "release:patch": "npm version patch && git push && git push --tags",
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.10",
+    "rimraf": "^6.0.1",
     "typescript": ">=5.6.2"
   }
 }
