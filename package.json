@@ -1,6 +1,6 @@
 {
   "name": "styledwind-native",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "A lightweight utility for applying dynamic Tailwind CSS styles in React Native",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,7 +8,10 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "test": "jest"
+    "test": "jest",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:major": "npm version major && git push && git push --tags"
   },
   "keywords": [
     "tailwind",
