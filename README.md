@@ -1,3 +1,5 @@
+![styledwind-native](https://i.imgur.com/GRSYZhG.png)
+
 # styledwind-native
 
 > A tiny wrapper for [`twrnc`](https://github.com/jaredh159/tailwind-react-native-classnames) that brings a familiar [`styled-components`](https://github.com/styled-components/styled-components)-like API to React Native, making it easy to apply dynamic Tailwind CSS styles while avoiding verbose inline styling.
