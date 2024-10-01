@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 let tailwindConfig;
 
 try {
-  tailwindConfig = require('../../tailwind.config.js');
+  tailwindConfig = require('../../../tailwind.config.js');
 } catch (error) {}
 
 const twrnc = create(tailwindConfig);
