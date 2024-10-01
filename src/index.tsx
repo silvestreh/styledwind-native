@@ -216,4 +216,5 @@ function generateTailwindStyledComponents(): TailwindComponents {
 const tw = generateTailwindStyledComponents();
 
 export * from 'twrnc';
+export { create, useDeviceContext };
 export default tw;
