@@ -5,6 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silvestreh/stylewind-native.git"
+  },
   "scripts": {
     "build": "rimraf dist && tsc",
     "prepublishOnly": "npm run build",
