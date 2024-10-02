@@ -1,4 +1,4 @@
-![styledwind-native](https://i.imgur.com/D6CaKcs.png)
+![styledwind-native](https://raw.githubusercontent.com/silvestreh/stylewind-native/refs/heads/main/.github/header.png)
 
 # styledwind-native
 
