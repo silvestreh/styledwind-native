@@ -158,7 +158,7 @@ function createTailwindComponent<T = {}>(
     }
 
     const insets = useSafeAreaInsets();
-    let style = twrnc`${classNames}`;
+    let style = { ...twrnc`${classNames}` };
 
     interpolations.forEach(interpolation => {
       const interpolatedStyle = interpolation(props as T);
