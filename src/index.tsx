@@ -144,7 +144,7 @@ function createTailwindComponent<T = {}>(
 ) {
   const classNames = styles.filter(style => !['', ','].includes(style.trim())).join();
 
-  return function TailwindComponent({ children, component, ...props }: TailwindComponentProps) {
+  return React.forwardRef<any, TailwindComponentProps & T>(function TailwindComponent({ children, component, ...props }, ref) {
     useDeviceContext(twrnc);
 
     let BaseComponent = Component;
@@ -188,11 +188,11 @@ function createTailwindComponent<T = {}>(
     if (classNames.includes('safe:w-right')) style.width = insets.right;
 
     return (
-      <BaseComponent {...props} style={[baseStyle, style, props.style]}>
+      <BaseComponent {...props} ref={ref} style={[baseStyle, style, props.style]}>
         {children}
       </BaseComponent>
     );
-  };
+  });
 }
 
 function generateTailwindStyledComponents(): TailwindComponents {
