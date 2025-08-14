@@ -1,6 +1,5 @@
 import React from 'react';
 import RN from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   useDeviceContext,
@@ -39,43 +38,102 @@ function useColorSchemeValue<T>(lightValue: T, darkValue: T): T {
   return scheme === 'dark' ? darkValue : lightValue;
 }
 
-type PersistedOptions = StyledwindDeviceOptions & { storageKey?: string };
+// Color Scheme Context API
+type StorageAPI = {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+  removeItem?(key: string): Promise<void>;
+};
 
-function usePersistedColorScheme(options?: PersistedOptions) {
-  const [scheme, toggle, setScheme] = useColorScheme(options);
-  const storageKey = options?.storageKey ?? 'styledwind:color-scheme';
-  const didLoadRef = React.useRef(false);
+type ColorSchemeMode = 'device' | 'light' | 'dark';
 
+type ColorSchemeContextValue = {
+  scheme: ReturnType<typeof useAppColorScheme>[0];
+  mode: ColorSchemeMode;
+  toggle: () => void;
+  setMode: (mode: ColorSchemeMode) => void;
+  setScheme: ReturnType<typeof useAppColorScheme>[2];
+};
+
+const ColorSchemeContext = React.createContext<ColorSchemeContextValue | null>(null);
+
+type ProviderProps = {
+  children?: React.ReactNode;
+  initialColorScheme?: ColorSchemeMode;
+  observeDeviceColorSchemeChanges?: boolean;
+  storage?: StorageAPI;
+  storageKey?: string;
+};
+
+function Provider({
+  children,
+  initialColorScheme = 'device',
+  observeDeviceColorSchemeChanges = false,
+  storage,
+  storageKey = 'styledwind:color-scheme',
+}: ProviderProps) {
+  // Initialize device context once per tree using the chosen initial mode
+  useDeviceContext(
+    twrnc,
+    ({
+      initialColorScheme,
+      observeDeviceColorSchemeChanges,
+    } as unknown) as any
+  );
+
+  const [scheme, _toggle, _setScheme] = useAppColorScheme(twrnc);
+  const [mode, setMode] = React.useState<ColorSchemeMode>(initialColorScheme);
+
+  // Load persisted mode
   React.useEffect(() => {
+    if (!storage) return;
     let mounted = true;
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem(storageKey);
-        if (mounted && (saved === 'light' || saved === 'dark')) {
-          setScheme(saved as any);
+        const saved = await storage.getItem(storageKey);
+        if (mounted && (saved === 'light' || saved === 'dark' || saved === 'device')) {
+          setMode(saved as ColorSchemeMode);
+          _setScheme(saved === 'device' ? (undefined as any) : (saved as any));
         }
       } catch {}
-      if (mounted) didLoadRef.current = true;
     })();
     return () => {
       mounted = false;
     };
-  }, [setScheme, storageKey]);
+  }, [storage, storageKey, _setScheme]);
 
+  // Persist mode
   React.useEffect(() => {
-    if (!didLoadRef.current) return;
+    if (!storage) return;
     (async () => {
       try {
-        if (scheme === 'light' || scheme === 'dark') {
-          await AsyncStorage.setItem(storageKey, scheme);
-        } else {
-          await AsyncStorage.setItem(storageKey, 'system');
-        }
+        await storage.setItem(storageKey, mode);
       } catch {}
     })();
-  }, [scheme, storageKey]);
+  }, [mode, storage, storageKey]);
 
-  return [scheme, toggle, setScheme] as ReturnType<typeof useAppColorScheme>;
+  const toggle = React.useCallback(() => {
+    setMode(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      _setScheme(next as any);
+      return next;
+    });
+  }, [_setScheme]);
+
+  const setModeAndScheme = React.useCallback(
+    (nextMode: ColorSchemeMode) => {
+      setMode(nextMode);
+      _setScheme(nextMode === 'device' ? (undefined as any) : (nextMode as any));
+    },
+    [_setScheme]
+  );
+
+  const value = React.useMemo<ColorSchemeContextValue>(
+    () => ({ scheme, mode, toggle, setMode: setModeAndScheme, setScheme: _setScheme }),
+    [scheme, mode, toggle, setModeAndScheme, _setScheme]
+  );
+
+  return <ColorSchemeContext.Provider value={value}>{children}</ColorSchemeContext.Provider>;
 }
 
 const allowedComponents = [
@@ -330,5 +388,12 @@ function generateTailwindStyledComponents(): TailwindComponents {
 const tw = generateTailwindStyledComponents();
 
 export * from 'twrnc';
-export { create, useDeviceContext, useColorSchemeValue, useColorScheme, usePersistedColorScheme };
+export {
+  create,
+  useDeviceContext,
+  useColorSchemeValue,
+  useColorScheme,
+  Provider,
+  ColorSchemeContext,
+};
 export default tw;
