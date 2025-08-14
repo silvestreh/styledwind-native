@@ -17,27 +17,23 @@ try {
 
 const twrnc = create(tailwindConfig);
 
-let deviceContextManagedByApp = false;
-
 type StyledwindDeviceOptions = {
   observeDeviceColorSchemeChanges?: boolean;
   initialColorScheme?: 'device' | 'light' | 'dark';
 };
 
 function useColorScheme(options?: StyledwindDeviceOptions) {
-  deviceContextManagedByApp = true;
-  useDeviceContext(twrnc, options as any);
+  useDeviceContext(
+    twrnc,
+    ({
+      initialColorScheme: (options?.initialColorScheme ?? 'device') as any,
+      observeDeviceColorSchemeChanges: options?.observeDeviceColorSchemeChanges ?? false,
+    } as unknown) as any
+  );
   return useAppColorScheme(twrnc);
 }
 
 function useColorSchemeValue<T>(lightValue: T, darkValue: T): T {
-  // If the app already manages device context, don't re-initialize it
-  if (!deviceContextManagedByApp) {
-    useDeviceContext(twrnc);
-  } else {
-    // Keep hook order stable without side-effects
-    React.useRef(null);
-  }
   const [scheme] = useAppColorScheme(twrnc);
   return scheme === 'dark' ? darkValue : lightValue;
 }
@@ -210,12 +206,15 @@ function createTailwindComponent<T = {}>(
   const classNames = styles.filter(style => !['', ','].includes(style.trim())).join();
 
   return React.forwardRef<any, TailwindComponentProps & T>(function TailwindComponent({ children, component, ...props }, ref) {
-    if (deviceContextManagedByApp) {
-      // keep hook position stable without re-initializing device context
-      React.useRef(null);
-    } else {
-      useDeviceContext(twrnc);
-    }
+    // Keep hook order stable and preserve current scheme
+    const [scheme] = useAppColorScheme(twrnc);
+    useDeviceContext(
+      twrnc,
+      ({
+        initialColorScheme: (scheme ?? 'device') as any,
+        observeDeviceColorSchemeChanges: false,
+      } as unknown) as any
+    );
 
     let BaseComponent = Component as any;
     let baseStyle = null;
