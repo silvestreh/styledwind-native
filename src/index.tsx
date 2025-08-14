@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 let tailwindConfig;
 
 try {
-  tailwindConfig = require('../tailwind.config.js'); // eslint-disable-line @typescript-eslint/no-require-imports
+  tailwindConfig = require('../../../tailwind.config.js'); // eslint-disable-line @typescript-eslint/no-require-imports
 } catch (error) {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const twrnc = create(tailwindConfig);
