@@ -20,7 +20,8 @@ const twrnc = create(tailwindConfig);
 type ColorSchemeType = 'light' | 'dark' | 'device';
 
 interface ColorSchemeContextValue {
-  colorScheme: ColorSchemeType;
+  colorScheme: 'light' | 'dark';
+  internalColorScheme: ColorSchemeType;
   toggleColorScheme: () => void;
   setColorScheme: (scheme: ColorSchemeType) => void;
 }
@@ -260,20 +261,35 @@ export function Provider({
   initialColorScheme = 'device',
   storage,
 }: ProviderProps) {
-  const [colorScheme, toggleColorScheme, setColorScheme] =
+  const [userColorScheme, setUserColorScheme] =
+    React.useState<ColorSchemeType>(initialColorScheme);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [twrnColorScheme, twrnToggleColorScheme, twrnSetColorScheme] =
     useAppColorScheme(twrnc);
 
-  useDeviceContext(twrnc, {
-    observeDeviceColorSchemeChanges: false,
-    initialColorScheme,
-  });
+  // Configure twrnc based on user's color scheme preference
+  useDeviceContext(
+    twrnc,
+    userColorScheme === 'device'
+      ? undefined // Let twrnc automatically observe device changes
+      : {
+          observeDeviceColorSchemeChanges: false,
+          initialColorScheme: userColorScheme,
+        }
+  );
 
   // Load persisted color scheme once on mount
   useEffect(() => {
     if (storage) {
       storage.getItem('tw:color-scheme').then(value => {
-        if (value) {
-          setColorScheme(value as 'light' | 'dark');
+        if (
+          value &&
+          (value === 'light' || value === 'dark' || value === 'device')
+        ) {
+          setUserColorScheme(value as ColorSchemeType);
+          if (value !== 'device') {
+            twrnSetColorScheme(value as 'light' | 'dark');
+          }
         }
       });
     }
@@ -282,17 +298,45 @@ export function Provider({
 
   // Persist color scheme on changes
   useEffect(() => {
-    if (storage && (colorScheme === 'light' || colorScheme === 'dark')) {
-      storage.setItem('tw:color-scheme', colorScheme);
+    if (storage) {
+      if (userColorScheme === 'device') {
+        // Clear stored color scheme when switching to device mode
+        storage.removeItem('tw:color-scheme');
+      } else {
+        storage.setItem('tw:color-scheme', userColorScheme);
+      }
     }
-  }, [colorScheme, storage]);
+  }, [userColorScheme, storage]);
+
+  const toggleColorScheme = () => {
+    if (userColorScheme === 'device') {
+      // If in device mode, toggle to light/dark based on current device scheme
+      const newScheme = twrnColorScheme === 'dark' ? 'light' : 'dark';
+      setUserColorScheme(newScheme);
+      twrnSetColorScheme(newScheme);
+    } else {
+      // If in manual mode, toggle between light and dark
+      const newScheme = userColorScheme === 'dark' ? 'light' : 'dark';
+      setUserColorScheme(newScheme);
+      twrnSetColorScheme(newScheme);
+    }
+  };
+
+  const setColorScheme = (scheme: ColorSchemeType) => {
+    setUserColorScheme(scheme);
+    if (scheme !== 'device') {
+      twrnSetColorScheme(scheme);
+    }
+    // If scheme is 'device', twrnc will automatically use device color scheme
+  };
 
   return (
     <ColorSchemeContext.Provider
       value={{
-        colorScheme: (colorScheme as ColorSchemeType) || 'device',
+        colorScheme: (twrnColorScheme as 'light' | 'dark') || 'light',
+        internalColorScheme: userColorScheme,
         toggleColorScheme,
-        setColorScheme: setColorScheme as (scheme: ColorSchemeType) => void,
+        setColorScheme,
       }}
     >
       {children}
@@ -304,15 +348,18 @@ const tw = generateTailwindStyledComponents();
 
 export function useColorScheme() {
   const ctx = useContext(ColorSchemeContext);
-  const [colorScheme, toggleColorScheme, setColorScheme] =
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [twrnColorScheme, twrnToggleColorScheme, twrnSetColorScheme] =
     useAppColorScheme(twrnc);
 
   if (ctx) return ctx;
 
+  // Fallback when used outside Provider - assume device mode
   return {
-    colorScheme: (colorScheme as ColorSchemeType) || 'device',
-    toggleColorScheme,
-    setColorScheme: setColorScheme as (scheme: ColorSchemeType) => void,
+    colorScheme: (twrnColorScheme as 'light' | 'dark') || 'light',
+    internalColorScheme: 'device' as ColorSchemeType,
+    toggleColorScheme: twrnToggleColorScheme,
+    setColorScheme: twrnSetColorScheme as (scheme: ColorSchemeType) => void,
   };
 }
 

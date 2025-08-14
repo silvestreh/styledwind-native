@@ -12,7 +12,8 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 // Mock twrnc to control color scheme behavior in tests
-let mockColorScheme = 'device';
+// Default to 'light' since twrnc's getColorScheme() never returns 'device'
+let mockColorScheme = 'light';
 
 // Create a mock function that can work as both a function and template literal
 const mockTwrncFunction = jest.fn((strings, ...values) => {
@@ -24,13 +25,17 @@ const mockTwrncFunction = jest.fn((strings, ...values) => {
 Object.assign(mockTwrncFunction, {
   getColorScheme: jest.fn(() => mockColorScheme),
   setColorScheme: jest.fn((scheme) => {
-    // Only accept valid color schemes, fallback to device for invalid ones
-    if (['light', 'dark', 'device'].includes(scheme)) {
+    // twrnc's setColorScheme accepts 'device' as input but getColorScheme never returns 'device'
+    if (scheme === 'light' || scheme === 'dark') {
       mockColorScheme = scheme;
       mockTwrncFunction.getColorScheme.mockReturnValue(scheme);
+    } else if (scheme === 'device') {
+      // When set to 'device', return the current device color scheme (mock as 'light')
+      mockColorScheme = 'light'; // Mock device color scheme as light
+      mockTwrncFunction.getColorScheme.mockReturnValue('light');
     } else {
-      // Invalid scheme, keep current or fallback to device
-      mockColorScheme = mockColorScheme || 'device';
+      // Invalid scheme, keep current or fallback to light
+      mockColorScheme = mockColorScheme || 'light';
       mockTwrncFunction.getColorScheme.mockReturnValue(mockColorScheme);
     }
   }),
@@ -71,16 +76,20 @@ jest.mock('twrnc', () => ({
 // Export mock for use in tests
 global.mockTwrnc = mockTwrnc;
 global.resetMockColorScheme = () => {
-  mockColorScheme = 'device';
-  mockTwrnc.getColorScheme.mockReturnValue('device');
+  mockColorScheme = 'light';
+  mockTwrnc.getColorScheme.mockReturnValue('light');
   mockTwrnc.setColorScheme.mockImplementation((scheme) => {
-    // Only accept valid color schemes, fallback to device for invalid ones
-    if (['light', 'dark', 'device'].includes(scheme)) {
+    // twrnc's setColorScheme accepts 'device' as input but getColorScheme never returns 'device'
+    if (scheme === 'light' || scheme === 'dark') {
       mockColorScheme = scheme;
       mockTwrnc.getColorScheme.mockReturnValue(scheme);
+    } else if (scheme === 'device') {
+      // When set to 'device', return the current device color scheme (mock as 'light')
+      mockColorScheme = 'light'; // Mock device color scheme as light
+      mockTwrnc.getColorScheme.mockReturnValue('light');
     } else {
-      // Invalid scheme, keep current or fallback to device
-      mockColorScheme = mockColorScheme || 'device';
+      // Invalid scheme, keep current or fallback to light
+      mockColorScheme = mockColorScheme || 'light';
       mockTwrnc.getColorScheme.mockReturnValue(mockColorScheme);
     }
   });

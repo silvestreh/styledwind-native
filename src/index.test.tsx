@@ -103,8 +103,13 @@ describe('Color Scheme Functionality', () => {
   describe('Provider component', () => {
     it('should provide default color scheme context', () => {
       const TestComponent = () => {
-        const { colorScheme } = useColorScheme();
-        return <Text testID="color-scheme">{colorScheme}</Text>;
+        const { colorScheme, internalColorScheme } = useColorScheme();
+        return (
+          <View>
+            <Text testID="color-scheme">{colorScheme}</Text>
+            <Text testID="internal-color-scheme">{internalColorScheme}</Text>
+          </View>
+        );
       };
 
       const { getByTestId } = render(
@@ -113,7 +118,10 @@ describe('Color Scheme Functionality', () => {
         </Provider>
       );
 
-      expect(getByTestId('color-scheme').props.children).toBe('device');
+      // colorScheme should be the actual color scheme (light or dark)
+      expect(['light', 'dark']).toContain(getByTestId('color-scheme').props.children);
+      // internalColorScheme should be the user's preference
+      expect(getByTestId('internal-color-scheme').props.children).toBe('device');
     });
 
     it('should use initial color scheme when provided', () => {
@@ -220,10 +228,11 @@ describe('Color Scheme Functionality', () => {
   describe('useColorScheme hook', () => {
     it('should return color scheme functions when used inside Provider', () => {
       const TestComponent = () => {
-        const { colorScheme, toggleColorScheme, setColorScheme } = useColorScheme();
+        const { colorScheme, internalColorScheme, toggleColorScheme, setColorScheme } = useColorScheme();
         return (
           <View>
             <Text testID="color-scheme">{colorScheme}</Text>
+            <Text testID="internal-color-scheme">{internalColorScheme}</Text>
             <Text testID="has-toggle">{typeof toggleColorScheme === 'function' ? 'true' : 'false'}</Text>
             <Text testID="has-set">{typeof setColorScheme === 'function' ? 'true' : 'false'}</Text>
           </View>
@@ -236,17 +245,19 @@ describe('Color Scheme Functionality', () => {
         </Provider>
       );
 
-      expect(getByTestId('color-scheme').props.children).toBe('device');
+      expect(['light', 'dark']).toContain(getByTestId('color-scheme').props.children);
+      expect(getByTestId('internal-color-scheme').props.children).toBe('device');
       expect(getByTestId('has-toggle').props.children).toBe('true');
       expect(getByTestId('has-set').props.children).toBe('true');
     });
 
     it('should work when used outside Provider (fallback to twrnc)', () => {
       const TestComponent = () => {
-        const { colorScheme, toggleColorScheme, setColorScheme } = useColorScheme();
+        const { colorScheme, internalColorScheme, toggleColorScheme, setColorScheme } = useColorScheme();
         return (
           <View>
             <Text testID="color-scheme">{colorScheme}</Text>
+            <Text testID="internal-color-scheme">{internalColorScheme}</Text>
             <Text testID="has-toggle">{typeof toggleColorScheme === 'function' ? 'true' : 'false'}</Text>
             <Text testID="has-set">{typeof setColorScheme === 'function' ? 'true' : 'false'}</Text>
           </View>
@@ -255,7 +266,8 @@ describe('Color Scheme Functionality', () => {
 
       const { getByTestId } = render(<TestComponent />);
 
-      expect(getByTestId('color-scheme').props.children).toBe('device');
+      expect(['light', 'dark']).toContain(getByTestId('color-scheme').props.children);
+      expect(getByTestId('internal-color-scheme').props.children).toBe('device');
       expect(getByTestId('has-toggle').props.children).toBe('true');
       expect(getByTestId('has-set').props.children).toBe('true');
     });
@@ -296,10 +308,11 @@ describe('Color Scheme Functionality', () => {
 
     it('should set specific color scheme', () => {
       const TestComponent = () => {
-        const { colorScheme, setColorScheme } = useColorScheme();
+        const { colorScheme, internalColorScheme, setColorScheme } = useColorScheme();
         return (
           <View>
             <Text testID="color-scheme">{colorScheme}</Text>
+            <Text testID="internal-color-scheme">{internalColorScheme}</Text>
             <Text testID="set-dark" onPress={() => setColorScheme('dark')}>
               Set Dark
             </Text>
@@ -321,12 +334,17 @@ describe('Color Scheme Functionality', () => {
 
       fireEvent.press(getByTestId('set-dark'));
       expect(getByTestId('color-scheme').props.children).toBe('dark');
+      expect(getByTestId('internal-color-scheme').props.children).toBe('dark');
 
       fireEvent.press(getByTestId('set-light'));
       expect(getByTestId('color-scheme').props.children).toBe('light');
+      expect(getByTestId('internal-color-scheme').props.children).toBe('light');
 
       fireEvent.press(getByTestId('set-device'));
-      expect(getByTestId('color-scheme').props.children).toBe('device');
+      // When set to device, colorScheme should be the actual device color scheme
+      expect(['light', 'dark']).toContain(getByTestId('color-scheme').props.children);
+      // internalColorScheme should be 'device'
+      expect(getByTestId('internal-color-scheme').props.children).toBe('device');
     });
   });
 
@@ -409,8 +427,8 @@ describe('Color Scheme Functionality', () => {
         </Provider>
       );
 
-      // Should still render with default color scheme
-      expect(['light', 'dark', 'device']).toContain(getByTestId('color-scheme').props.children);
+      // Should still render with default color scheme (actual color scheme, not 'device')
+      expect(['light', 'dark']).toContain(getByTestId('color-scheme').props.children);
     });
 
     it('should handle invalid stored color scheme values', async () => {
@@ -433,9 +451,9 @@ describe('Color Scheme Functionality', () => {
       });
 
       // The invalid value gets passed to twrnc's setColorScheme, but our mock should handle it gracefully
-      // Since we control the mock, it should still return a valid color scheme
+      // Since we control the mock, it should still return a valid color scheme (actual color scheme, not 'device')
       const actualScheme = getByTestId('color-scheme').props.children;
-      expect(['light', 'dark', 'device']).toContain(actualScheme);
+      expect(['light', 'dark']).toContain(actualScheme);
     });
   });
 });
