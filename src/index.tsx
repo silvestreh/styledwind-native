@@ -1,5 +1,6 @@
 import React from 'react';
 import RN from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   useDeviceContext,
@@ -36,6 +37,45 @@ function useColorScheme(options?: StyledwindDeviceOptions) {
 function useColorSchemeValue<T>(lightValue: T, darkValue: T): T {
   const [scheme] = useAppColorScheme(twrnc);
   return scheme === 'dark' ? darkValue : lightValue;
+}
+
+type PersistedOptions = StyledwindDeviceOptions & { storageKey?: string };
+
+function usePersistedColorScheme(options?: PersistedOptions) {
+  const [scheme, toggle, setScheme] = useColorScheme(options);
+  const storageKey = options?.storageKey ?? 'styledwind:color-scheme';
+  const didLoadRef = React.useRef(false);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem(storageKey);
+        if (mounted && (saved === 'light' || saved === 'dark')) {
+          setScheme(saved as any);
+        }
+      } catch {}
+      if (mounted) didLoadRef.current = true;
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [setScheme, storageKey]);
+
+  React.useEffect(() => {
+    if (!didLoadRef.current) return;
+    (async () => {
+      try {
+        if (scheme === 'light' || scheme === 'dark') {
+          await AsyncStorage.setItem(storageKey, scheme);
+        } else {
+          await AsyncStorage.setItem(storageKey, 'system');
+        }
+      } catch {}
+    })();
+  }, [scheme, storageKey]);
+
+  return [scheme, toggle, setScheme] as ReturnType<typeof useAppColorScheme>;
 }
 
 const allowedComponents = [
@@ -290,5 +330,5 @@ function generateTailwindStyledComponents(): TailwindComponents {
 const tw = generateTailwindStyledComponents();
 
 export * from 'twrnc';
-export { create, useDeviceContext, useColorSchemeValue, useColorScheme };
+export { create, useDeviceContext, useColorSchemeValue, useColorScheme, usePersistedColorScheme };
 export default tw;

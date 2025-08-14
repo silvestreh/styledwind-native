@@ -10,6 +10,9 @@ export default {
   globals: {
     __DEV__: true,
   },
+  moduleNameMapper: {
+    '^@react-native-async-storage/async-storage$': '<rootDir>/test/__mocks__/async-storage.ts',
+  },
   transformIgnorePatterns: [
     'node_modules/(?!(@react-native|react-native|@react-native-community|@testing-library|@react-native/js-polyfills)/)',
   ],

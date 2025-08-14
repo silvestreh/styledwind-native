@@ -10,3 +10,5 @@ jest.mock('react-native-safe-area-context', () => {
     }),
   };
 });
+
+// AsyncStorage is mocked via moduleNameMapper in jest.config.js
