@@ -39,7 +39,12 @@ function useColorScheme(options?: StyledwindDeviceOptions) {
 
 function useColorSchemeValue<T>(lightValue: T, darkValue: T): T {
   const ctx = React.useContext(ColorSchemeContext);
-  const scheme = ctx ? ctx.scheme : useAppColorScheme(twrnc)[0];
+  if (ctx) {
+    const deviceScheme = RN.useColorScheme();
+    const effective = ctx.mode === 'device' ? deviceScheme : ctx.scheme;
+    return effective === 'dark' ? darkValue : lightValue;
+  }
+  const [scheme] = useAppColorScheme(twrnc);
   return scheme === 'dark' ? darkValue : lightValue;
 }
 
@@ -88,6 +93,8 @@ function Provider({
 
   const [scheme, _toggle, _setScheme] = useAppColorScheme(twrnc);
   const [mode, setMode] = React.useState<ColorSchemeMode>(initialColorScheme);
+  const [hydrated, setHydrated] = React.useState<boolean>(() => !storage);
+  const deviceScheme = RN.useColorScheme();
 
   // Load persisted mode
   React.useEffect(() => {
@@ -98,14 +105,19 @@ function Provider({
         const saved = await storage.getItem(storageKey);
         if (mounted && (saved === 'light' || saved === 'dark' || saved === 'device')) {
           setMode(saved as ColorSchemeMode);
-          _setScheme(saved === 'device' ? (undefined as any) : (saved as any));
+          if (saved === 'device') {
+            _setScheme(deviceScheme as any);
+          } else {
+            _setScheme(saved as any);
+          }
         }
       } catch {}
+      if (mounted) setHydrated(true);
     })();
     return () => {
       mounted = false;
     };
-  }, [storage, storageKey, _setScheme]);
+  }, [storage, storageKey, _setScheme, deviceScheme]);
 
   // Persist mode
   React.useEffect(() => {
@@ -128,9 +140,13 @@ function Provider({
   const setModeAndScheme = React.useCallback(
     (nextMode: ColorSchemeMode) => {
       setMode(nextMode);
-      _setScheme(nextMode === 'device' ? (undefined as any) : (nextMode as any));
+      if (nextMode === 'device') {
+        _setScheme(deviceScheme as any);
+      } else {
+        _setScheme(nextMode as any);
+      }
     },
-    [_setScheme]
+    [_setScheme, deviceScheme]
   );
 
   const value = React.useMemo<ColorSchemeContextValue>(
@@ -138,6 +154,9 @@ function Provider({
     [scheme, mode, toggle, setModeAndScheme, _setScheme]
   );
 
+  if (storage && !hydrated) {
+    return null;
+  }
   return <ColorSchemeContext.Provider value={value}>{children}</ColorSchemeContext.Provider>;
 }
 
@@ -355,7 +374,6 @@ function createTailwindComponent<T = {}>(
       <BaseComponent
         {...props}
         ref={ref}
-        key={twrnc.memoBuster}
         style={[baseStyle, style, props.style]}
       >
         {children}
