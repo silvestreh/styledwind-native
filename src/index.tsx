@@ -24,10 +24,22 @@ type StyledwindDeviceOptions = {
   initialColorScheme?: 'device' | 'light' | 'dark';
 };
 
-export function useStyledwindColorScheme(options?: StyledwindDeviceOptions) {
+function useColorScheme(options?: StyledwindDeviceOptions) {
   deviceContextManagedByApp = true;
   useDeviceContext(twrnc, options as any);
   return useAppColorScheme(twrnc);
+}
+
+function useColorSchemeValue<T>(lightValue: T, darkValue: T): T {
+  // If the app already manages device context, don't re-initialize it
+  if (!deviceContextManagedByApp) {
+    useDeviceContext(twrnc);
+  } else {
+    // Keep hook order stable without side-effects
+    React.useRef(null);
+  }
+  const [scheme] = useAppColorScheme(twrnc);
+  return scheme === 'dark' ? darkValue : lightValue;
 }
 
 const allowedComponents = [
@@ -198,7 +210,10 @@ function createTailwindComponent<T = {}>(
   const classNames = styles.filter(style => !['', ','].includes(style.trim())).join();
 
   return React.forwardRef<any, TailwindComponentProps & T>(function TailwindComponent({ children, component, ...props }, ref) {
-    if (!deviceContextManagedByApp) {
+    if (deviceContextManagedByApp) {
+      // keep hook position stable without re-initializing device context
+      React.useRef(null);
+    } else {
       useDeviceContext(twrnc);
     }
 
@@ -276,5 +291,5 @@ function generateTailwindStyledComponents(): TailwindComponents {
 const tw = generateTailwindStyledComponents();
 
 export * from 'twrnc';
-export { create, useDeviceContext };
+export { create, useDeviceContext, useColorSchemeValue, useColorScheme };
 export default tw;

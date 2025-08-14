@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, act } from '@testing-library/react-native';
-import tw, { useStyledwindColorScheme, useAppColorScheme } from './index';
+import { render, act, waitFor } from '@testing-library/react-native';
+import tw, { useColorScheme, useColorSchemeValue } from './index';
 import { View, TextInput, StyleSheet } from 'react-native';
 
 type TextComponentProps = {
@@ -113,7 +113,7 @@ describe('styledwind-native', () => {
     };
 
     const Harness = React.forwardRef<HarnessApi>(function Harness(_props, ref) {
-      const [scheme, toggle, setScheme] = useStyledwindColorScheme({
+      const [scheme, toggle, setScheme] = useColorScheme({
         initialColorScheme: 'light',
         observeDeviceColorSchemeChanges: false,
       });
@@ -166,7 +166,7 @@ describe('styledwind-native', () => {
     type HarnessApi = { toggle: () => void };
 
     const Harness = React.forwardRef<HarnessApi>(function Harness(_props, ref) {
-      const [_scheme, toggle] = useStyledwindColorScheme({
+      const [_scheme, toggle] = useColorScheme({
         initialColorScheme: 'device',
         observeDeviceColorSchemeChanges: false,
       });
@@ -189,6 +189,46 @@ describe('styledwind-native', () => {
     ).backgroundColor;
 
     expect(afterToggleBg).not.toBe(initialBg);
+  });
+
+  it('useColorschemeValue should return correct value per scheme', async () => {
+    const Probe: React.FC<{ onValue: (v: string) => void }> = ({ onValue }) => {
+      const value = useColorSchemeValue('lightV', 'darkV');
+      React.useEffect(() => {
+        onValue(value);
+      }, [value, onValue]);
+      return null;
+    };
+
+    const Harness: React.FC<{ onValue: (v: string) => void }> = ({ onValue }) => {
+      useColorScheme({
+        initialColorScheme: 'light',
+        observeDeviceColorSchemeChanges: false,
+      });
+      return <Probe onValue={onValue} />;
+    };
+
+    let reported: string | null = null;
+    const { rerender } = render(
+      <Harness onValue={(v) => { reported = v; }} />
+    );
+    expect(reported).toBe('lightV');
+
+    // Force dark using a single harness that toggles scheme
+    const TogglingHarness: React.FC<{ onValue: (v: string) => void } & { to: 'dark' | 'light' }> = ({ onValue, to }) => {
+      const [_scheme, _toggle, setScheme] = useColorScheme({
+        initialColorScheme: 'light',
+        observeDeviceColorSchemeChanges: false,
+      });
+      React.useLayoutEffect(() => {
+        setScheme(to);
+      }, [to]);
+      return <Probe onValue={onValue} />;
+    };
+    render(<TogglingHarness to="dark" onValue={(v) => { reported = v; }} />);
+    await waitFor(() => {
+      expect(reported).toBe('darkV');
+    });
   });
 
 });
