@@ -42,7 +42,7 @@ interface ImageProps extends RN.ImageProps {
 
 interface TailwindComponentProps {
   children?: React.ReactNode;
-  component?: React.FC<any>;
+  component?: React.ComponentType<any>;
   [key: string]: any;
 }
 
@@ -50,95 +50,125 @@ type TailwindComponents = TailwindFn & {
   ActivityIndicator: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.ActivityIndicatorProps & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.ActivityIndicatorProps & T & React.RefAttributes<any>
+  >;
   AnimatedFlatList: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.Animated.AnimatedProps<RN.FlatListProps<any>> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.Animated.AnimatedProps<RN.FlatListProps<any>> & T & React.RefAttributes<any>
+  >;
   AnimatedImage: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.Animated.AnimatedProps<ImageProps> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.Animated.AnimatedProps<ImageProps> & T & React.RefAttributes<any>
+  >;
   AnimatedScrollView: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.Animated.AnimatedProps<RN.ScrollViewProps> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.Animated.AnimatedProps<RN.ScrollViewProps> & T & React.RefAttributes<any>
+  >;
   AnimatedSectionList: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.Animated.AnimatedProps<RN.SectionListProps<any>> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.Animated.AnimatedProps<RN.SectionListProps<any>> & T & React.RefAttributes<any>
+  >;
   AnimatedText: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.Animated.AnimatedProps<RN.TextProps> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.Animated.AnimatedProps<RN.TextProps> & T & React.RefAttributes<any>
+  >;
   AnimatedView: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.Animated.AnimatedProps<RN.ViewProps> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.Animated.AnimatedProps<RN.ViewProps> & T & React.RefAttributes<any>
+  >;
   Button: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.ButtonProps & T>;
+  ) => React.ForwardRefExoticComponent<RN.ButtonProps & T & React.RefAttributes<any>>;
   FlatList: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.FlatListProps<any> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.FlatListProps<any> & T & React.RefAttributes<any>
+  >;
   Image: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<ImageProps & T>;
+  ) => React.ForwardRefExoticComponent<ImageProps & T & React.RefAttributes<any>>;
   Modal: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.ModalProps & T>;
+  ) => React.ForwardRefExoticComponent<RN.ModalProps & T & React.RefAttributes<any>>;
   SafeAreaView: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.ViewProps & T>;
+  ) => React.ForwardRefExoticComponent<RN.ViewProps & T & React.RefAttributes<any>>;
   ScrollView: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.ScrollViewProps & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.ScrollViewProps & T & React.RefAttributes<any>
+  >;
   SectionList: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.SectionListProps<any> & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.SectionListProps<any> & T & React.RefAttributes<any>
+  >;
   StatusBar: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.StatusBarProps & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.StatusBarProps & T & React.RefAttributes<any>
+  >;
   Switch: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.SwitchProps & T>;
+  ) => React.ForwardRefExoticComponent<RN.SwitchProps & T & React.RefAttributes<any>>;
   Text: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.TextProps & T>;
+  ) => React.ForwardRefExoticComponent<RN.TextProps & T & React.RefAttributes<any>>;
   TextInput: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.TextInputProps & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.TextInputProps & T & React.RefAttributes<any>
+  >;
   TouchableHighlight: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.TouchableHighlightProps & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.TouchableHighlightProps & T & React.RefAttributes<any>
+  >;
   TouchableNativeFeedback: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.TouchableNativeFeedbackProps & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.TouchableNativeFeedbackProps & T & React.RefAttributes<any>
+  >;
   TouchableOpacity: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.TouchableOpacityProps & T>;
+  ) => React.ForwardRefExoticComponent<
+    RN.TouchableOpacityProps & T & React.RefAttributes<any>
+  >;
   View: <T = {}>(
     styles: TemplateStringsArray,
     ...interpolations: ((props: T) => false | Style | undefined)[]
-  ) => React.FC<RN.ViewProps & T>;
+  ) => React.ForwardRefExoticComponent<RN.ViewProps & T & React.RefAttributes<any>>;
 };
 
 function createTailwindComponent<T = {}>(
-  Component: React.FC<any>,
+  Component: React.ComponentType<any>,
   styles: TemplateStringsArray,
   ...interpolations: ((props: T) => false | Style | undefined)[]
 ) {
