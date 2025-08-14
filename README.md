@@ -57,6 +57,98 @@ const MyComponent = () => {
 export default MyComponent;
 ```
 
+## Provider Setup
+
+To enable color scheme management, wrap your app with the `Provider` component:
+
+```tsx
+import React from 'react';
+import { Provider } from 'styledwind-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export default function App() {
+  return (
+    <Provider
+      initialColorScheme="device" // 'light' | 'dark' | 'device'
+      storage={AsyncStorage} // Optional: for persistent storage
+    >
+      {/* Your app content */}
+    </Provider>
+  );
+}
+```
+
+## Color Scheme Management
+
+`styledwind-native` provides built-in support for light/dark mode with automatic system detection.
+
+### Using the `useColorScheme` Hook
+
+```tsx
+import { useColorScheme } from 'styledwind-native';
+
+function SettingsScreen() {
+  const {
+    colorScheme,        // Current color scheme being used ('light' | 'dark')
+    internalColorScheme, // User's preference ('light' | 'dark' | 'device')
+    setColorScheme,     // Function to change color scheme
+    toggleColorScheme   // Function to toggle between light/dark
+  } = useColorScheme();
+
+  return (
+    <View>
+      <Text>Current theme: {colorScheme}</Text>
+      <Text>User preference: {internalColorScheme}</Text>
+
+      <Button
+        title="Light Mode"
+        onPress={() => setColorScheme('light')}
+      />
+      <Button
+        title="Dark Mode"
+        onPress={() => setColorScheme('dark')}
+      />
+      <Button
+        title="System Mode"
+        onPress={() => setColorScheme('device')}
+      />
+      <Button
+        title="Toggle Theme"
+        onPress={toggleColorScheme}
+      />
+    </View>
+  );
+}
+```
+
+### Color Scheme Options
+
+- **`'light'`**: Force light mode
+- **`'dark'`**: Force dark mode
+- **`'device'`**: Automatically follow the system's color scheme
+
+### Using Dark Mode Classes
+
+Style your components with Tailwind's dark mode utilities:
+
+```tsx
+const Card = tw.View`
+  bg-white
+  dark:bg-gray-800
+  border-gray-200
+  dark:border-gray-700
+  p-4
+  rounded-lg
+`;
+
+const Text = tw.Text`
+  text-gray-900
+  dark:text-white
+`;
+```
+
+When set to `'device'` mode, the library automatically detects system color scheme changes and updates all styled components accordingly.
+
 ## VS Code Intellisense
 
 Add the following to the settings of the
