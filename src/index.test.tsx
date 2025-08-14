@@ -395,6 +395,8 @@ describe('Color Scheme Functionality', () => {
     });
   });
 
+  // Note: Device color scheme observation is tested manually since mocking React Native's useColorScheme is complex
+
   describe('Error handling and edge cases', () => {
     it('should handle storage errors gracefully', async () => {
       // Create a storage mock that rejects but doesn't throw unhandled errors

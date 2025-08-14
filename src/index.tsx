@@ -1,5 +1,5 @@
 import React, { useEffect, createContext, useContext } from 'react';
-import RN from 'react-native';
+import RN, { useColorScheme as useDeviceColorScheme } from 'react-native';
 import {
   create,
   useAppColorScheme,
@@ -178,8 +178,6 @@ function createTailwindComponent<T = object>(
 
   return React.forwardRef<any, TailwindComponentProps & T>(
     function TailwindComponent({ children, component, ...props }, ref) {
-      // Subscribe to twrnc color scheme changes so all styled components re-render when toggled
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [__colorScheme] = useAppColorScheme(twrnc);
 
       let BaseComponent = Component;
@@ -267,18 +265,26 @@ export function Provider({
   const [twrnColorScheme, twrnToggleColorScheme, twrnSetColorScheme] =
     useAppColorScheme(twrnc);
 
-  // Configure twrnc based on user's color scheme preference
+  const deviceColorScheme = useDeviceColorScheme();
+
   useDeviceContext(
     twrnc,
     userColorScheme === 'device'
-      ? undefined // Let twrnc automatically observe device changes
+      ? undefined
       : {
           observeDeviceColorSchemeChanges: false,
           initialColorScheme: userColorScheme,
         }
   );
 
-  // Load persisted color scheme once on mount
+  useEffect(() => {
+    if (userColorScheme === 'device' && deviceColorScheme) {
+      if (twrnColorScheme !== deviceColorScheme) {
+        twrnSetColorScheme(deviceColorScheme);
+      }
+    }
+  }, [deviceColorScheme, userColorScheme, twrnColorScheme, twrnSetColorScheme]);
+
   useEffect(() => {
     if (storage) {
       storage.getItem('tw:color-scheme').then(value => {
@@ -293,14 +299,11 @@ export function Provider({
         }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist color scheme on changes
   useEffect(() => {
     if (storage) {
       if (userColorScheme === 'device') {
-        // Clear stored color scheme when switching to device mode
         storage.removeItem('tw:color-scheme');
       } else {
         storage.setItem('tw:color-scheme', userColorScheme);
@@ -310,12 +313,10 @@ export function Provider({
 
   const toggleColorScheme = () => {
     if (userColorScheme === 'device') {
-      // If in device mode, toggle to light/dark based on current device scheme
       const newScheme = twrnColorScheme === 'dark' ? 'light' : 'dark';
       setUserColorScheme(newScheme);
       twrnSetColorScheme(newScheme);
     } else {
-      // If in manual mode, toggle between light and dark
       const newScheme = userColorScheme === 'dark' ? 'light' : 'dark';
       setUserColorScheme(newScheme);
       twrnSetColorScheme(newScheme);
@@ -327,7 +328,6 @@ export function Provider({
     if (scheme !== 'device') {
       twrnSetColorScheme(scheme);
     }
-    // If scheme is 'device', twrnc will automatically use device color scheme
   };
 
   return (
@@ -348,13 +348,11 @@ const tw = generateTailwindStyledComponents();
 
 export function useColorScheme() {
   const ctx = useContext(ColorSchemeContext);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [twrnColorScheme, twrnToggleColorScheme, twrnSetColorScheme] =
     useAppColorScheme(twrnc);
 
   if (ctx) return ctx;
 
-  // Fallback when used outside Provider - assume device mode
   return {
     colorScheme: (twrnColorScheme as 'light' | 'dark') || 'light',
     internalColorScheme: 'device' as ColorSchemeType,
