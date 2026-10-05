@@ -7,6 +7,11 @@ import type {
   ColorSchemePreference,
   ProviderProps,
 } from './types';
+import {
+  notifyColorScheme,
+  pauseColorSchemeNotifications,
+  useColorSchemeSnapshot,
+} from './scheme-store';
 
 const STORAGE_KEY = 'tw:color-scheme';
 
@@ -33,6 +38,9 @@ export function createColorScheme(twrnc: TailwindFn) {
 
     const deviceColorScheme = useDeviceColorScheme();
 
+    // `useDeviceContext` sets the scheme while this component renders. The
+    // effect below notifies the styled components once that is committed.
+    const resume = pauseColorSchemeNotifications(twrnc);
     useDeviceContext(
       twrnc,
       userColorScheme === 'device'
@@ -42,6 +50,7 @@ export function createColorScheme(twrnc: TailwindFn) {
             initialColorScheme: userColorScheme,
           }
     );
+    resume();
 
     useEffect(() => {
       if (userColorScheme === 'device' && deviceColorScheme) {
@@ -79,6 +88,13 @@ export function createColorScheme(twrnc: TailwindFn) {
       }
     }, [userColorScheme, storage]);
 
+    // In `device` mode twrnc takes the device's scheme while this Provider
+    // renders, without going through `setColorScheme`. Styled components that
+    // did not re-render with it are told to re-read the scheme.
+    useEffect(() => {
+      notifyColorScheme(twrnc);
+    });
+
     const toggleColorScheme = () => {
       const current =
         userColorScheme === 'device' ? twrnColorScheme : userColorScheme;
@@ -110,8 +126,11 @@ export function createColorScheme(twrnc: TailwindFn) {
 
   function useColorScheme(): ColorSchemeContextValue {
     const ctx = useContext(ColorSchemeContext);
-    const [twrnColorScheme, twrnToggleColorScheme, twrnSetColorScheme] =
+    const [, twrnToggleColorScheme, twrnSetColorScheme] =
       useAppColorScheme(twrnc);
+    // Without a Provider the scheme is shared through the store, so a change
+    // made by one component reaches the others.
+    const twrnColorScheme = useColorSchemeSnapshot(twrnc);
 
     if (ctx) return ctx;
 

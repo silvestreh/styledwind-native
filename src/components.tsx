@@ -1,8 +1,9 @@
 import React from 'react';
 import RN from 'react-native';
-import { useAppColorScheme, type TailwindFn, type Style } from 'twrnc';
+import type { TailwindFn, Style } from 'twrnc';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { parseTemplate, SAFE_AREA_UTILITIES } from './safe-area';
+import { useColorSchemeSnapshot } from './scheme-store';
 import type {
   ComponentPropsMap,
   Interpolation,
@@ -52,7 +53,7 @@ function createTailwindComponent<T = object>(
   return React.forwardRef<any, TailwindComponentProps & T>(
     function TailwindComponent({ children, component, ...props }, ref) {
       // Subscribes this component to color scheme changes.
-      useAppColorScheme(twrnc);
+      useColorSchemeSnapshot(twrnc);
 
       let BaseComponent = Component;
       let baseStyle: RN.StyleProp<any> = null;

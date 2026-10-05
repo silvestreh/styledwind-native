@@ -44,6 +44,8 @@ Object.assign(mockTwrncFunction, {
 });
 
 const mockTwrnc = mockTwrncFunction;
+// The library wraps the instance's `setColorScheme`, so the mock itself is kept here.
+const setColorSchemeMock = mockTwrncFunction.setColorScheme;
 
 jest.mock('twrnc', () => ({
   create: jest.fn(() => mockTwrnc),
@@ -78,7 +80,7 @@ global.mockTwrnc = mockTwrnc;
 global.resetMockColorScheme = () => {
   mockColorScheme = 'light';
   mockTwrnc.getColorScheme.mockReturnValue('light');
-  mockTwrnc.setColorScheme.mockImplementation((scheme) => {
+  setColorSchemeMock.mockImplementation((scheme) => {
     // twrnc's setColorScheme accepts 'device' as input but getColorScheme never returns 'device'
     if (scheme === 'light' || scheme === 'dark') {
       mockColorScheme = scheme;
